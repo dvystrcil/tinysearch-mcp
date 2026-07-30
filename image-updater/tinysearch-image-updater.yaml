@@ -1,0 +1,21 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: tinysearch-iu
+spec:
+  namespace: argocd
+  applicationRefs:
+  - namePattern: tinysearch
+    images:
+    - alias: tinysearch
+      imageName: marcellm01/tinysearch
+      commonUpdateSettings:
+        allowTags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
+        updateStrategy: semver
+        forceUpdate: false
+    writeBackConfig:
+      method: git
+      gitConfig:
+        repository: https://github.com/dvystrcil/tinysearch-mcp.git
+        branch: main
+        writeBackTarget: kustomization:/overlays

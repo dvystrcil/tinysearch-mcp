@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tinysearch-config
+  namespace: tinysearch
+data:
+  tinysearch_config.json: |
+    {
+      "search_backend": "searxng",
+      "search_backend_url": "http://searxng.searxng.svc.cluster.local/search",
+      "search_backend_fallback": true,
+      "search_engines": [],
+      "search_region": "",
+      "embedding_backend": "onnx",
+      "embedding_model": "fast"
+    }
