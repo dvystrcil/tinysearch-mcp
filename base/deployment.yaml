@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinysearch
+  namespace: tinysearch
+  labels:
+    app: tinysearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tinysearch
+  template:
+    metadata:
+      labels:
+        app: tinysearch
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: tinysearch
+        image: marcellm01/tinysearch:v0.4.1
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 100m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      hostNetwork: false
+      hostPID: false
+      volumes:
+      - name: tmp
+        emptyDir: {}
