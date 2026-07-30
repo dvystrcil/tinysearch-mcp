@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinysearch
+  namespace: tinysearch
+  labels:
+    app: tinysearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tinysearch
+  template:
+    metadata:
+      labels:
+        app: tinysearch
+    spec:
+      # No runAsNonRoot/runAsUser here: the upstream image's
+      # docker-entrypoint.sh deliberately starts as root (to chown the
+      # bind-mounted /config, whose UID/GID won't match the in-image
+      # `tinysearch` user) then drops privilege itself via `gosu tinysearch`.
+      # Forcing non-root at the pod level would break that entrypoint before
+      # it ever gets to drop privilege on its own.
+      containers:
+      - name: tinysearch
+        image: marcellm01/tinysearch:v0.4.1
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: TINYSEARCH_MODELS_DIR
+          value: /data/models
+        - name: TINYSEARCH_CONFIG_PATH
+          value: /config/tinysearch_config.json
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: "8000"
+        - name: SEARXNG_URL
+          value: http://searxng.searxng.svc.cluster.local/search
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 250m
+          limits:
+            memory: 1536Mi
+            cpu: 1000m
+        volumeMounts:
+        - name: models
+          mountPath: /data/models
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: dshm
+          mountPath: /dev/shm
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: tinysearch-models
+      - name: config
+        configMap:
+          name: tinysearch-config
+      # Chromium (bundled in the image, used for page rendering during
+      # research/scrape) needs more than Kubernetes' default 64Mi /dev/shm;
+      # matches upstream's own compose.yaml shm_size: "1gb".
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 1Gi
