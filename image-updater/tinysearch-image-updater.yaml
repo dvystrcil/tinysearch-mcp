@@ -10,7 +10,7 @@ spec:
     - alias: tinysearch
       imageName: marcellm01/tinysearch
       commonUpdateSettings:
-        allowTags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
+        allowTags: regexp:^v[0-9]+\.[0-9]+\.[0-9]+$
         updateStrategy: semver
         forceUpdate: false
     writeBackConfig:
