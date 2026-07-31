@@ -40,13 +40,15 @@ spec:
           value: "8000"
         - name: SEARXNG_URL
           value: http://searxng.searxng.svc.cluster.local/search
+        # D-012 (VPA epic homelab#455): requests right-sized from the
+        # Off-mode VPA's measured target.
         resources:
           requests:
-            memory: 512Mi
-            cpu: 250m
+            cpu: 25m
+            memory: 1251Mi
           limits:
+            cpu: '1'
             memory: 1536Mi
-            cpu: 1000m
         volumeMounts:
         - name: models
           mountPath: /data/models
