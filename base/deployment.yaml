@@ -41,14 +41,14 @@ spec:
         - name: SEARXNG_URL
           value: http://searxng.searxng.svc.cluster.local/search
         # D-012 (VPA epic homelab#455): requests right-sized from the
-        # Off-mode VPA's measured target.
+        # Off-mode VPA's measured target. See notes in the PR body.
         resources:
           requests:
             cpu: 25m
-            memory: 1251Mi
+            memory: 1751Mi
           limits:
             cpu: '1'
-            memory: 1536Mi
+            memory: 2272Mi
         volumeMounts:
         - name: models
           mountPath: /data/models
