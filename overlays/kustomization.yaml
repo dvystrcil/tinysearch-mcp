@@ -4,4 +4,4 @@ resources:
 - ../base
 images:
 - name: marcellm01/tinysearch
-  newTag: v0.6.2
+  newTag: v0.6.3
