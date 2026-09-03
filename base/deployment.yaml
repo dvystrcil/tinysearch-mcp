@@ -56,6 +56,34 @@ spec:
           readOnly: true
         - name: dshm
           mountPath: /dev/shm
+          # Probes added 2026-09-03 (homelab#431 follow-up). This container had NO probe
+          # of any kind, so a wedged process reads Ready forever and nothing restarts it.
+          # Home Assistant proved the cost: HTTP dead, no logs, ~1 core spinning, 2.4 days,
+          # and Kubernetes called it healthy throughout because it had nothing to check.
+
+          # Three tiers, mirroring the proven ollama scheme: startup has a generous
+          # ceiling so a slow first boot is never killed; readiness is tight and only
+          # de-routes traffic; liveness is loose and restarts a genuinely stuck process.
+
+          # The target below was probed live before this was written -- a liveness probe
+          # pointed at a URL that 404s restart-loops the pod, which is worse than none.
+        startupProbe:
+          tcpSocket:
+            port: 8000
+          periodSeconds: 10
+          failureThreshold: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 4
       volumes:
       - name: models
         persistentVolumeClaim:
