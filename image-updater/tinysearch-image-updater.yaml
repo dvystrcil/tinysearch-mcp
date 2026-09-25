@@ -3,7 +3,6 @@ kind: ImageUpdater
 metadata:
   name: tinysearch-iu
 spec:
-  namespace: argocd
   applicationRefs:
   - namePattern: tinysearch
     images:
