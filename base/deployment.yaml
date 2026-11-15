@@ -45,9 +45,9 @@ spec:
         resources:
           requests:
             cpu: 25m
-            memory: 1312Mi
+            memory: 2240Mi
           limits:
-            memory: 2272Mi
+            memory: 2880Mi
         volumeMounts:
         - name: models
           mountPath: /data/models
