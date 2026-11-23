@@ -36,6 +36,10 @@ if dep:
           f"image must be the fork, pinned to a commit, got {c['image']}")
     check({"name": "tinysearch-harbor-pull"} in pod.get("imagePullSecrets", []),
           "needs imagePullSecrets tinysearch-harbor-pull (Harbor ai/ is private)")
+    # homelab#289: a workload that consumes an Infisical-managed Secret
+    # restarts when it changes. Also restarts the pod on a config change.
+    check(dep["metadata"].get("annotations", {}).get("reloader.stakater.com/auto") == "true",
+          "Deployment needs reloader.stakater.com/auto: \"true\" (homelab#289)")
     (tmp / "image").write_text(c["image"])
 
 pull = by.get(("InfisicalSecret", "tinysearch-harbor-pull"))

@@ -26,3 +26,10 @@ patches:
       - op: add
         path: /spec/template/spec/imagePullSecrets
         value: [{name: tinysearch-harbor-pull}]
+  # homelab#289: the pod consumes an Infisical-managed Secret (the pull secret
+  # above), so it restarts when that changes, and on config changes too.
+  - target: {kind: Deployment, name: tinysearch}
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: {reloader.stakater.com/auto: "true"}
