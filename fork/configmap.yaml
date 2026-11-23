@@ -1,0 +1,20 @@
+# The stock config (base/configmap.yaml) plus the fork's one new setting. The
+# JSON is a single string, so the whole value is restated here: keep the rest
+# in step with base.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tinysearch-config
+  namespace: tinysearch
+data:
+  tinysearch_config.json: |
+    {
+      "search_backend": "searxng",
+      "search_backend_url": "http://searxng.searxng.svc.cluster.local/search",
+      "search_backend_fallback": true,
+      "search_engines": [],
+      "search_region": "",
+      "embedding_backend": "onnx",
+      "embedding_model": "fast",
+      "scrape_refused_host_ttl_seconds": 600
+    }
