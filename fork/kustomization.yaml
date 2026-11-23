@@ -1,0 +1,35 @@
+# Side-by-side fork (dvystrcil/tinysearch-mcp#32): the same TinySearch as
+# overlays/, in its own namespace with its own model cache, running
+# dvystrcil/TinySearch (branch feat/remember-refused-hosts): a host that
+# answered 403/429/503 is answered from memory for ten minutes instead of being
+# fetched again. Only the tinywebui-fork instance points at it
+# (http://tinysearch.tinysearch-fork.svc.cluster.local:8000/mcp); stock
+# tinysearch and everything else that uses it are untouched.
+# Check with tests/validate-fork.sh.
+#
+# No image-updater: the tag pins a fork commit, bumped by hand. No HTTPRoute:
+# only in-cluster callers use it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tinysearch-fork
+resources:
+  - ../base
+  - harbor-pull-infisical-secret.yaml
+images:
+  - name: marcellm01/tinysearch
+    newName: harbor.sirddail.net/ai/tinysearch-fork
+    newTag: 0.7.1-refused-hosts-b1918cd
+patches:
+  - path: configmap.yaml
+  - target: {kind: Deployment, name: tinysearch}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value: [{name: tinysearch-harbor-pull}]
+  # homelab#289: the pod consumes an Infisical-managed Secret (the pull secret
+  # above), so it restarts when that changes, and on config changes too.
+  - target: {kind: Deployment, name: tinysearch}
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: {reloader.stakater.com/auto: "true"}

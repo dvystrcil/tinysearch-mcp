@@ -6,3 +6,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: dvystrcil/kustomize-validate-action@v1
+  fork:
+    # The side-by-side fork (fork/, #32). Harbor's ai/ project is private, so
+    # build the image here from the public fork at the commit its tag pins,
+    # under the same name, then run the same render + image check as locally.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Build the pinned fork image
+        run: |
+          set -euo pipefail
+          tag=$(sed -n 's/^ *newTag: *//p' fork/kustomization.yaml)
+          image=harbor.sirddail.net/ai/tinysearch-fork:$tag
+          sha=${tag##*-}
+          git clone -q https://github.com/dvystrcil/TinySearch.git /tmp/fork
+          git -C /tmp/fork checkout -q "$sha"
+          docker build -q --build-arg TINYSEARCH_VERSION="$tag" -t "$image" /tmp/fork
+      - run: tests/validate-fork.sh
