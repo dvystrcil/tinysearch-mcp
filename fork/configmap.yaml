@@ -1,6 +1,11 @@
-# The stock config (base/configmap.yaml) plus the fork's one new setting. The
+# The stock config (base/configmap.yaml) plus the fork's settings. The
 # JSON is a single string, so the whole value is restated here: keep the rest
 # in step with base.
+#
+# search_engines: the home IP is flagged by DuckDuckGo and Google, and bing
+# answers with off-topic results (homelab#1934). Ask SearXNG for Brave's
+# key-based API (opt-in there, ~1,000 free requests a month) plus yahoo.
+# Without the key braveapi is unloaded and yahoo alone answers.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,7 +17,7 @@ data:
       "search_backend": "searxng",
       "search_backend_url": "http://searxng.searxng.svc.cluster.local/search",
       "search_backend_fallback": true,
-      "search_engines": [],
+      "search_engines": ["braveapi", "yahoo"],
       "search_region": "",
       "embedding_backend": "onnx",
       "embedding_model": "fast",
