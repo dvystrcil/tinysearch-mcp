@@ -54,6 +54,12 @@ cfg = json.loads(cm["data"]["tinysearch_config.json"]) if cm else {}
 check(cfg.get("scrape_refused_host_ttl_seconds") == 600,
       "fork config must set scrape_refused_host_ttl_seconds: 600 (ten minutes, #32)")
 check(cfg.get("search_backend") == "searxng", "fork must search the same SearXNG as stock")
+# Brave's key-based API is opt-in in SearXNG (off by default, ~1,000 free
+# requests a month); the fork asks for it by name, plus the free engines that
+# returned relevant results from the home IP on 2026-11-24 (homelab#1934,
+# searxng#23). Not yandex: Russian-law filtering, worst on world news.
+check(cfg.get("search_engines") == ["braveapi", "duckduckgo web", "yahoo", "privacywall", "mwmbl"],
+      f"fork must ask SearXNG for the engines that answer from the home IP, got {cfg.get('search_engines')}")
 
 # The deploy bumps the newTag under `- name: harbor.sirddail.net/ai/tinysearch-fork`.
 # Only fork/ may name it, so a fork release can never reach overlays/.
