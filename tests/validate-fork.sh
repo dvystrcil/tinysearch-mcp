@@ -55,11 +55,18 @@ check(cfg.get("scrape_refused_host_ttl_seconds") == 600,
       "fork config must set scrape_refused_host_ttl_seconds: 600 (ten minutes, #32)")
 check(cfg.get("search_backend") == "searxng", "fork must search the same SearXNG as stock")
 # Brave's key-based API is opt-in in SearXNG (off by default, ~1,000 free
-# requests a month); the fork asks for it by name, plus the free engines that
-# returned relevant results from the home IP on 2026-11-24 (homelab#1934,
-# searxng#23). Not yandex: Russian-law filtering, worst on world news.
-check(cfg.get("search_engines") == ["braveapi", "duckduckgo web", "yahoo", "privacywall", "mwmbl"],
-      f"fork must ask SearXNG for the engines that answer from the home IP, got {cfg.get('search_engines')}")
+# requests a month), so the fork names it; search_categories adds SearXNG's
+# enabled general engines, so the free ones are chosen in one place: SearXNG
+# (homelab#1934, searxng#24, TinySearch#12).
+check(cfg.get("search_engines") == ["braveapi"] and cfg.get("search_categories") == ["general"],
+      f"fork must ask for braveapi plus SearXNG's general defaults, got engines="
+      f"{cfg.get('search_engines')} categories={cfg.get('search_categories')}")
+# An image older than 0.7.3 ignores search_categories and would search
+# braveapi ALONE, spending the whole quota: the config must not ship first.
+tag = (dep or {}).get("spec", {}).get("template", {}).get("spec", {}).get("containers", [{}])[0].get("image", "")
+m = re.search(r":(\d+)\.(\d+)\.(\d+)-refused-hosts$", tag)
+check(m is not None and tuple(map(int, m.groups())) >= (0, 7, 3),
+      f"search_categories needs tinysearch-fork >= 0.7.3, image is {tag}")
 
 # The deploy bumps the newTag under `- name: harbor.sirddail.net/ai/tinysearch-fork`.
 # Only fork/ may name it, so a fork release can never reach overlays/.
