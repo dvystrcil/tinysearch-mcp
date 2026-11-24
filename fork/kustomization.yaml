@@ -2,13 +2,16 @@
 # overlays/, in its own namespace with its own model cache, running
 # dvystrcil/TinySearch main: a host that answered 403/429/503 is answered from
 # memory for ten minutes instead of being fetched again, by scrape_urls
-# (TinySearch#9) and browser_navigate (TinySearch#10). Only the tinywebui-fork instance points at it
+# (TinySearch#9) and browser_navigate (TinySearch#10). Only the tinywebui-fork
+# instance points at it
 # (http://tinysearch.tinysearch-fork.svc.cluster.local:8000/mcp); stock
 # tinysearch and everything else that uses it are untouched.
 # Check with tests/validate-fork.sh.
 #
-# No image-updater: the tag pins a fork commit, bumped by hand. No HTTPRoute:
-# only in-cluster callers use it.
+# The image is built by dvystrcil/tinysearch-fork-docker from the fork commit
+# its fork.env pins, and each new build deploys itself here through
+# release-action (#35, D-049), tagged <X.Y.Z>-refused-hosts. No image-updater.
+# No HTTPRoute: only in-cluster callers use it.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: tinysearch-fork
@@ -16,9 +19,14 @@ resources:
   - ../base
   - harbor-pull-infisical-secret.yaml
 images:
+  # Two entries: the rename, then the tag under the Harbor name. The tag line
+  # is what dvystrcil/tinysearch-fork-docker's release-action deploy bumps
+  # (D-049), matched by `- name: harbor.sirddail.net/ai/tinysearch-fork`, so a
+  # fork release can never touch overlays/ (which names marcellm01/tinysearch).
   - name: marcellm01/tinysearch
     newName: harbor.sirddail.net/ai/tinysearch-fork
-    newTag: 0.7.1-refused-hosts-87e89f7
+  - name: harbor.sirddail.net/ai/tinysearch-fork
+    newTag: 0.7.1-refused-hosts
 patches:
   - path: configmap.yaml
   - target: {kind: Deployment, name: tinysearch}
