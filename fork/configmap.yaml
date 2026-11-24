@@ -2,13 +2,12 @@
 # JSON is a single string, so the whole value is restated here: keep the rest
 # in step with base.
 #
-# search_engines: the home IP is flagged by DuckDuckGo and Google, and bing
-# answers with off-topic results (homelab#1934). Ask SearXNG for Brave's
-# key-based API (opt-in there, ~1,000 free requests a month) plus the free
-# engines that returned relevant results from the home IP when every
-# general engine was tested on 2026-11-24. "duckduckgo web" is a different
-# DuckDuckGo endpoint from the CAPTCHA'd "duckduckgo". Left out: yandex
-# (Russian-law filtering, worst on world news), brave (cloaked URLs), bing.
+# search_engines + search_categories: the home IP is flagged by DuckDuckGo and
+# Google (homelab#1934). braveapi (Brave's key-based API, ~1,000 free requests
+# a month) is off by default in SearXNG, so it is named here; "general" adds
+# every engine SearXNG has on by default (searxng#24 picks those). Needs
+# tinysearch-fork >= 0.7.3 (TinySearch#12): an older image ignores
+# search_categories and would search braveapi alone.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,7 +19,8 @@ data:
       "search_backend": "searxng",
       "search_backend_url": "http://searxng.searxng.svc.cluster.local/search",
       "search_backend_fallback": true,
-      "search_engines": ["braveapi", "duckduckgo web", "yahoo", "privacywall", "mwmbl"],
+      "search_engines": ["braveapi"],
+      "search_categories": ["general"],
       "search_region": "",
       "embedding_backend": "onnx",
       "embedding_model": "fast",
