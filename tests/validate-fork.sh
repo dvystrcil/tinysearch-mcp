@@ -32,8 +32,10 @@ dep = by.get(("Deployment", "tinysearch"))
 check(dep is not None, "Deployment tinysearch missing")
 if dep:
     pod = dep["spec"]["template"]["spec"]; c = pod["containers"][0]
-    check(re.fullmatch(r"harbor\.sirddail\.net/ai/tinysearch-fork:[0-9.]+-[a-z-]+-[0-9a-f]{7}", c["image"]) is not None,
-          f"image must be the fork, pinned to a commit, got {c['image']}")
+    # A release of dvystrcil/tinysearch-fork-docker (#35, D-049): X.Y.Z plus
+    # the declared suffix, which is what its release-action deploy compares.
+    check(re.fullmatch(r"harbor\.sirddail\.net/ai/tinysearch-fork:\d+\.\d+\.\d+-refused-hosts", c["image"]) is not None,
+          f"image must be a fork release, X.Y.Z-refused-hosts, got {c['image']}")
     check({"name": "tinysearch-harbor-pull"} in pod.get("imagePullSecrets", []),
           "needs imagePullSecrets tinysearch-harbor-pull (Harbor ai/ is private)")
     # homelab#289: a workload that consumes an Infisical-managed Secret
@@ -52,6 +54,15 @@ cfg = json.loads(cm["data"]["tinysearch_config.json"]) if cm else {}
 check(cfg.get("scrape_refused_host_ttl_seconds") == 600,
       "fork config must set scrape_refused_host_ttl_seconds: 600 (ten minutes, #32)")
 check(cfg.get("search_backend") == "searxng", "fork must search the same SearXNG as stock")
+
+# The deploy bumps the newTag under `- name: harbor.sirddail.net/ai/tinysearch-fork`.
+# Only fork/ may name it, so a fork release can never reach overlays/.
+for root, want in (("fork", True), ("overlays", False)):
+    text = pathlib.Path(root, "kustomization.yaml").read_text()
+    named = re.search(r"^\s*-\s*name:\s*harbor\.sirddail\.net/ai/tinysearch-fork\s*\n\s*newTag:", text, re.M)
+    check(bool(named) == want,
+          f"{root}/kustomization.yaml " + ("must" if want else "must not")
+          + " have an images entry named harbor.sirddail.net/ai/tinysearch-fork with newTag")
 
 if fail:
     print("FAIL:\n  " + "\n  ".join(fail)); sys.exit(1)
