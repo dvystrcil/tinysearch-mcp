@@ -26,7 +26,7 @@ images:
   - name: marcellm01/tinysearch
     newName: harbor.sirddail.net/ai/tinysearch-fork
   - name: harbor.sirddail.net/ai/tinysearch-fork
-    newTag: 0.7.1-refused-hosts
+    newTag: 0.7.2-refused-hosts
 patches:
   - path: configmap.yaml
   - target: {kind: Deployment, name: tinysearch}
