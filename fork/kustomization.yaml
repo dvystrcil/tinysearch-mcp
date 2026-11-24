@@ -1,8 +1,8 @@
 # Side-by-side fork (dvystrcil/tinysearch-mcp#32): the same TinySearch as
 # overlays/, in its own namespace with its own model cache, running
-# dvystrcil/TinySearch (branch feat/remember-refused-hosts): a host that
-# answered 403/429/503 is answered from memory for ten minutes instead of being
-# fetched again. Only the tinywebui-fork instance points at it
+# dvystrcil/TinySearch main: a host that answered 403/429/503 is answered from
+# memory for ten minutes instead of being fetched again, by scrape_urls
+# (TinySearch#9) and browser_navigate (TinySearch#10). Only the tinywebui-fork instance points at it
 # (http://tinysearch.tinysearch-fork.svc.cluster.local:8000/mcp); stock
 # tinysearch and everything else that uses it are untouched.
 # Check with tests/validate-fork.sh.
@@ -18,7 +18,7 @@ resources:
 images:
   - name: marcellm01/tinysearch
     newName: harbor.sirddail.net/ai/tinysearch-fork
-    newTag: 0.7.1-refused-hosts-b1918cd
+    newTag: 0.7.1-refused-hosts-87e89f7
 patches:
   - path: configmap.yaml
   - target: {kind: Deployment, name: tinysearch}
